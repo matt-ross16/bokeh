@@ -179,7 +179,7 @@ export class CanvasView extends DOMView {
     ]
 
     extend(this.el.style, style)
-    append(this.el, ...elements)
+    append(this.shadow_el, ...elements)
 
     logger.debug("CanvasView initialized")
   }
