@@ -16,6 +16,7 @@ import {LayoutDOM} from "models/layouts/layout_dom"
 import {ColumnDataSource} from "models/sources/column_data_source"
 import {ClientSession} from "client/session"
 import {Model} from "model"
+import {ModelDef, resolve_defs} from "./defs"
 import {
   DocumentEvent, DocumentEventBatch, DocumentChangedEvent, ModelChangedEvent,
   RootRemovedEvent, TitleChangedEvent, MessageSentEvent,
@@ -43,16 +44,17 @@ export class EventManager {
   }
 }
 
-export interface DocJson {
+export type DocJson = {
   version?: string
   title?: string
+  defs?: ModelDef[]
   roots: {
-    root_ids: string[]
+    root_ids: ID[]
     references: Struct[]
   }
 }
 
-export interface Patch {
+export type Patch = {
   references: Struct[]
   events: DocumentChanged[]
 }
@@ -621,6 +623,10 @@ export class Document {
       logger.warn(versions_string)
     } else
       logger.debug(versions_string)
+
+    if (json.defs != null) {
+      resolve_defs(json.defs)
+    }
 
     const roots_json = json.roots
     const root_ids = roots_json.root_ids
