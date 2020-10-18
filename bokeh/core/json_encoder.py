@@ -238,6 +238,7 @@ class BokehJSONEncoder(json.JSONEncoder):
 
         '''
 
+        from ..dataclass import as_dict, is_dataclass
         from ..model import Model
         from ..colors import Color
         from .has_props import HasProps
@@ -254,9 +255,10 @@ class BokehJSONEncoder(json.JSONEncoder):
             return obj.ref
         elif isinstance(obj, HasProps):
             return obj.properties_with_values(include_defaults=False)
+        elif is_dataclass(obj):
+            return as_dict(obj)
         elif isinstance(obj, Color):
             return obj.to_css()
-
         else:
             return self.transform_python_types(obj)
 
