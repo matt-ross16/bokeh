@@ -913,10 +913,6 @@ class Document:
             str
 
         '''
-        root_ids = []
-        for r in self._roots:
-            root_ids.append(r.id)
-
         class StaticSerializer:
 
             def __init__(self):
@@ -946,15 +942,15 @@ class Document:
 
         root_references = self._all_models.values()
 
-        json = {
-            'title' : self.title,
-            'defs' : serializer.definitions,
-            'roots' : {
-                'root_ids' : root_ids,
-                'references' : references_json(root_references)
-            },
-            'version' : __version__,
-        }
+        json = dict(
+            title   = self.title,
+            defs    = serializer.definitions,
+            roots   = dict(
+                root_ids   = [ r.id for r in self._roots ],
+                references = references_json(root_references),
+            ),
+            version = __version__,
+        )
 
         return serialize_json(json, indent=indent)
 
