@@ -27,10 +27,11 @@ log = logging.getLogger(__name__)
 
 # Standard library imports
 import difflib
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 from warnings import warn
 
 # Bokeh imports
+from ..dataclass import dataclass
 from ..util.string import nice_join
 from .property.descriptor_factory import PropertyDescriptorFactory
 from .property.override import Override
@@ -338,21 +339,21 @@ class HasProps(metaclass=MetaHasProps):
         if module == "__main__" or module.split(".")[0] == "bokeh":
             module = None
 
-        properties = []
-        overrides = []
+        properties: List[PropertyDef] = []
+        overrides: List[OverrideDef] = []
 
         # TODO: don't use unordered sets
         for prop_name in list(cls.__properties__):
             descriptor = cls.lookup(prop_name)
             kind = None # TODO: serialize kinds
             default = descriptor.property._default # TODO: private member
-            properties.append(dict(name=prop_name, kind=kind, default=default))
+            properties.append(PropertyDef(prop_name, kind, default))
 
         for prop_name, default in getattr(cls, "__overridden_defaults__", {}).items():
-            overrides.append(dict(name=prop_name, default=default))
+            overrides.append(OverrideDef(prop_name, default))
 
-        modeldef = dict(name=name, module=module, extends=extends, properties=properties, overrides=overrides)
-        modelref = dict(name=name, module=module)
+        modeldef = ModelDef(name, module, extends, properties, overrides)
+        modelref = ModelRef(name, module)
 
         serializer.add_ref(cls, modelref, modeldef)
         return modelref
@@ -691,6 +692,29 @@ class HasProps(metaclass=MetaHasProps):
 
         '''
         return self.__class__(**self._property_values)
+
+KindDef = Any
+
+@dataclass
+class PropertyDef:
+    name: str
+    kind: Optional[KindDef] = None
+    default: Optional[Any] = None
+
+@dataclass
+class OverrideDef:
+    name: str
+    default: Any
+
+@dataclass
+class ModelRef:
+    name: str
+    module: Optional[str] = None
+
+class ModelDef(ModelRef):
+    extends: Optional[ModelRef] = None
+    properties: List[PropertyDef] = []
+    overrides: List[OverrideDef] = []
 
 #-----------------------------------------------------------------------------
 # Private API
