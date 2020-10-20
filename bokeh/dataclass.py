@@ -35,7 +35,9 @@ __all__ = (
     "as_tuple",
     "dataclass",
     "fields",
+    "valueclass",
     "is_dataclass",
+    "is_valueclass",
 )
 
 DataClass = Any
@@ -66,6 +68,12 @@ def dataclass(cls: Optional[type] = None, *, meta=None, **options):
 def is_dataclass(obj: Any) -> bool:
     """Return True if the given object is a data class as implemented in this package, otherwise False."""
     return getattr(obj, "__metaclass__", None) is DataClassMeta
+
+def valueclass(cls: Optional[type] = None, *, meta=None, **options):
+    return dataclass(cls, meta=meta, valueclass=True, **options)
+
+def is_valueclass(obj: Any) -> bool:
+    return is_dataclass(obj) and obj.__dataclass__.valueclass
 
 def is_dataclass_instance(obj: Any) -> bool:
     """Return True if the given object is an instance of a data class, otherwise False."""
@@ -108,6 +116,7 @@ class DataClassMeta(type):
       frozen=False,
       kwargs=False,
       slots=False,
+      valueclass=False,
       hide_internals=True,
     )
 
